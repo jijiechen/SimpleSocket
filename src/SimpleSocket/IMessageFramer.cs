@@ -12,10 +12,9 @@ namespace SimpleSocket
     public interface IMessageFramer
     {
         void UnFrameData(IEnumerable<ArraySegment<byte>> data);
-        void UnFrameData(ArraySegment<byte> data);
         IEnumerable<ArraySegment<byte>> FrameData(ArraySegment<byte> data);
 
-        void RegisterMessageArrivedCallback(Action<ArraySegment<byte>> handler);
+        void RegisterMessageArrivedCallback(Action<byte[]> handler);
         void Cleanup();
     }
 

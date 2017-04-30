@@ -31,12 +31,12 @@ namespace SimpleSocket
         
         private readonly Action<TcpConnectionManager, SocketError> _connectionClosed;
         private readonly Action<TcpConnectionManager> _connectionEstablished;
-        private readonly Action<TcpConnectionManager, ArraySegment<byte>> _messageReceived;
+        private readonly Action<TcpConnectionManager, byte[]> _messageReceived;
 
         public TcpConnectionManager(string connectionName,
                                     ITcpConnection openedConnection,
                                     IMessageFramer framer,
-                                    Action<TcpConnectionManager, ArraySegment<byte>> messageReceived,
+                                    Action<TcpConnectionManager, byte[]> messageReceived,
                                     Action<TcpConnectionManager, SocketError> onConnectionClosed)
         {
             Ensure.NotNull(openedConnection, nameof(openedConnection));
@@ -69,7 +69,7 @@ namespace SimpleSocket
                                     string sslTargetHost,
                                     bool sslValidateServer,
                                     IMessageFramer framer,
-                                    Action<TcpConnectionManager, ArraySegment<byte>> messageReceived,
+                                    Action<TcpConnectionManager, byte[]> messageReceived,
                                     Action<TcpConnectionManager> onConnectionEstablished,
                                     Action<TcpConnectionManager, SocketError> onConnectionClosed)
         {
@@ -135,10 +135,10 @@ namespace SimpleSocket
             _framer.Cleanup();
         }
 
-        private void OnMessageArrived(ArraySegment<byte> data)
+        private void OnMessageArrived(byte[] data)
         {
             Log.Trace("Message arrived from connection '{0}#{1:d}' [{2}] length: {3}.", 
-                     ConnectionName, ConnectionId, _tcpConnection.RemoteEndPoint, data.Count);
+                     ConnectionName, ConnectionId, _tcpConnection.RemoteEndPoint, data.Length);
 
             try
             {
