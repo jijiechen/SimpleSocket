@@ -7,11 +7,11 @@ namespace SimpleSocket.Events
     {
         public ConnectionClosedEventArgs(TcpConnectionManager connectionManager, SocketError socketError)
         {
-            this.ConnectionManager = connectionManager;
+            this.Connection = connectionManager;
             this.SocketError = socketError;
         }
 
-        public TcpConnectionManager ConnectionManager { get; private set; }
+        public TcpConnectionManager Connection { get; private set; }
         public SocketError SocketError { get; private set; }
     }
 }

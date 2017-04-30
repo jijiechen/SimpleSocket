@@ -21,11 +21,11 @@ namespace SimpleSocket
         public readonly Guid ConnectionId;
         public readonly string ConnectionName;
         public readonly IPEndPoint RemoteEndPoint;
-        public IPEndPoint LocalEndPoint { get { return _connection.LocalEndPoint; } }
+        public IPEndPoint LocalEndPoint { get { return _tcpConnection.LocalEndPoint; } }
         public bool IsClosed { get { return _isClosed != 0; } }
-        public int SendQueueSize { get { return _connection.SendQueueSize; } }
+        public int SendQueueSize { get { return _tcpConnection.SendQueueSize; } }
 
-        private readonly ITcpConnection _connection;
+        private readonly ITcpConnection _tcpConnection;
         private readonly IMessageFramer _framer;
         private int _isClosed;
         
@@ -52,11 +52,11 @@ namespace SimpleSocket
             _connectionClosed = onConnectionClosed;
 
             RemoteEndPoint = openedConnection.RemoteEndPoint;
-            _connection = openedConnection;
-            _connection.ConnectionClosed += OnConnectionClosed;
-            if (_connection.IsClosed)
+            _tcpConnection = openedConnection;
+            _tcpConnection.ConnectionClosed += OnConnectionClosed;
+            if (_tcpConnection.IsClosed)
             {
-                OnConnectionClosed(_connection, SocketError.Success);
+                OnConnectionClosed(_tcpConnection, SocketError.Success);
                 return;
             }
         }
@@ -91,14 +91,14 @@ namespace SimpleSocket
 
             RemoteEndPoint = remoteEndPoint;
 
-            _connection = useSsl 
+            _tcpConnection = useSsl 
                 ? connector.ConnectSslTo(ConnectionId, remoteEndPoint, ConnectionTimeout, sslTargetHost, sslValidateServer, OnConnectionEstablished, OnConnectionFailed, true)
                 : connector.ConnectTo(ConnectionId, remoteEndPoint, ConnectionTimeout, OnConnectionEstablished, OnConnectionFailed, true);
 
-            _connection.ConnectionClosed += OnConnectionClosed;
-            if (_connection.IsClosed)
+            _tcpConnection.ConnectionClosed += OnConnectionClosed;
+            if (_tcpConnection.IsClosed)
             {
-                OnConnectionClosed(_connection, SocketError.Success);
+                OnConnectionClosed(_tcpConnection, SocketError.Success);
                 return;
             }
         }
@@ -138,7 +138,7 @@ namespace SimpleSocket
         private void OnMessageArrived(ArraySegment<byte> data)
         {
             Log.Trace("Message arrived from connection '{0}#{1:d}' [{2}] length: {3}.", 
-                     ConnectionName, ConnectionId, _connection.RemoteEndPoint, data.Count);
+                     ConnectionName, ConnectionId, _tcpConnection.RemoteEndPoint, data.Count);
 
             try
             {
@@ -148,14 +148,14 @@ namespace SimpleSocket
             catch (Exception ex)
             {
                 Log.ErrorException(ex, "Error while handling message on connection '{0}#{1:d}' [{2}] error: {4}.",
-                    ConnectionName, ConnectionId, _connection.RemoteEndPoint,  ex.Message);
+                    ConnectionName, ConnectionId, _tcpConnection.RemoteEndPoint,  ex.Message);
                 CloseConnectionOnError("Error while handling message");
             }
         }
 
         public void StartReceiving()
         {
-            _connection.ReceiveAsync(OnRawDataReceived);
+            _tcpConnection.ReceiveAsync(OnRawDataReceived);
         }
 
         private void OnRawDataReceived(ITcpConnection connection, IEnumerable<ArraySegment<byte>> data)
@@ -169,39 +169,37 @@ namespace SimpleSocket
                 CloseConnectionOnError(string.Format("Invalid TCP frame received. Error: {0}.", exc.Message));
                 return;
             }
-            _connection.ReceiveAsync(OnRawDataReceived);
+            _tcpConnection.ReceiveAsync(OnRawDataReceived);
         }
 
-        public void CloseConnectionOnError(string message)
+        void CloseConnectionOnError(string message)
         {
             Ensure.NotNull(message, "message");
             Log.Error("Closing connection '{0}#{1:d}' [R{2}, L{3}] due to error. Reason: {4}", ConnectionName, ConnectionId, RemoteEndPoint, LocalEndPoint,  message);
-            _connection.Close(message);
+            _tcpConnection.Close(message);
         }
 
-        public void Stop(string reason = null)
+        public void Close(string reason = null)
         {
             Log.Trace("Closing connection '{0}#{1:d}' [R{2}, L{3}] cleanly.{4}", ConnectionName, ConnectionId, RemoteEndPoint, LocalEndPoint,  reason.IsEmptyString() ? string.Empty : " Reason: " + reason);
-            _connection.Close(reason);
+            _tcpConnection.Close(reason);
         }
 
-        private void Send(byte[] bytes, bool checkQueueSize = true)
+        public void Send(byte[] bytes, bool checkQueueSize = true)
         {
             if (IsClosed)
                 return;
 
             int queueSize;
-            if (checkQueueSize && (queueSize = _connection.SendQueueSize) > ConnectionQueueSizeThreshold)
+            if (checkQueueSize && (queueSize = _tcpConnection.SendQueueSize) > ConnectionQueueSizeThreshold)
             {
-                // todo: throw error!
                 CloseConnectionOnError(string.Format("Connection queue size is too large: {0}.", queueSize));
                 return;
             }
 
             var data = new ArraySegment<byte>(bytes);
             var framed = _framer.FrameData(data);
-            _connection.EnqueueSend(framed);
+            _tcpConnection.EnqueueSend(framed);
         }
-
     }
 }

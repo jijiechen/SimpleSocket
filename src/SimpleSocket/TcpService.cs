@@ -7,7 +7,7 @@ using SimpleSocket.Events;
 
 namespace SimpleSocket
 {
-    public enum TcpSecurityType
+    enum TcpSecurityType
     {
         Normal,
         Secure

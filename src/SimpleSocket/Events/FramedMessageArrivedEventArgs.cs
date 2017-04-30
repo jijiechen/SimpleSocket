@@ -7,11 +7,11 @@ namespace SimpleSocket.Events
     {
         public FramedMessageArrivedEventArgs(TcpConnectionManager connectionManager, ArraySegment<byte> data)
         {
-            this.ConnectionManager = connectionManager;
+            this.Connection = connectionManager;
             this.Data = data;
         }
 
-        public TcpConnectionManager ConnectionManager { get; private set; }
+        public TcpConnectionManager Connection { get; private set; }
         public ArraySegment<byte> Data { get; private set; }
     }
 }

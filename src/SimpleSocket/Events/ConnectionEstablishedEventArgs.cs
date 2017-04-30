@@ -5,9 +5,9 @@ namespace SimpleSocket.Events
     {
         public ConnectionEstablishedEventArgs(TcpConnectionManager connectionManager)
         {
-            this.ConnectionManager = connectionManager;
+            this.Connection = connectionManager;
         }
 
-        public TcpConnectionManager ConnectionManager { get; private set; }
+        public TcpConnectionManager Connection { get; private set; }
     }
 }
