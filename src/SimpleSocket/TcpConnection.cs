@@ -331,18 +331,13 @@ namespace SimpleSocket
 
             if (_verbose)
             {
-                Log.Info("ES {0} closed [{1:HH:mm:ss.fff}: N{2}, L{3}, {4:B}]:Received bytes: {5}, Sent bytes: {6}",
+                Log.Info("{0} closed [{1:HH:mm:ss.fff}: R{2}, L{3}, {4:d}]:Close reason: [{5}] {6} " +
+                        "Received bytes: {7}, Sent bytes: {8}, Receive calls: {9}, Receive callbacks: {10}, Send calls: {11}, callbacks: {12}",
                         GetType().Name, DateTime.UtcNow, RemoteEndPoint, LocalEndPoint, _connectionId,
-                        TotalBytesReceived, TotalBytesSent);
-                Log.Info("ES {0} closed [{1:HH:mm:ss.fff}: N{2}, L{3}, {4:B}]:Send calls: {5}, callbacks: {6}",
-                        GetType().Name, DateTime.UtcNow, RemoteEndPoint, LocalEndPoint, _connectionId,
+                        socketError, reason,
+                        TotalBytesReceived, TotalBytesSent,
+                        ReceiveCalls, ReceiveCallbacks,
                         SendCalls, SendCallbacks);
-                Log.Info("ES {0} closed [{1:HH:mm:ss.fff}: N{2}, L{3}, {4:B}]:Receive calls: {5}, callbacks: {6}",
-                        GetType().Name, DateTime.UtcNow, RemoteEndPoint, LocalEndPoint, _connectionId,
-                        ReceiveCalls, ReceiveCallbacks);
-                Log.Info("ES {0} closed [{1:HH:mm:ss.fff}: N{2}, L{3}, {4:B}]:Close reason: [{5}] {6}",
-                        GetType().Name, DateTime.UtcNow, RemoteEndPoint, LocalEndPoint, _connectionId,
-                        socketError, reason);
             }
 
             if (_socket != null)
