@@ -11,7 +11,6 @@ namespace SimpleSocketDemo
     {
         static readonly ManualResetEvent _quitEvent = new ManualResetEvent(false);
         static readonly UTF8Encoding UTF8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-        static TcpService<EchoFramer> _tcpService;        
 
         static void Main(string[] args)
         {
@@ -20,16 +19,16 @@ namespace SimpleSocketDemo
 
             var endpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 3666);
 
-            _tcpService = new TcpService<EchoFramer>(endpoint, null);
-            _tcpService.ConnectionEstablished += (sender, ev) =>
+            var tcpService = new TcpService<EchoFramer>(endpoint, null);
+            tcpService.ConnectionEstablished += (sender, ev) =>
             {
                 Console.WriteLine("New connection connected from {0}", ev.Connection.RemoteEndPoint);
             };
-            _tcpService.ConnectionClosed += (sender, ev) =>
+            tcpService.ConnectionClosed += (sender, ev) =>
             {
                 Console.WriteLine("Connection from {0} dropped", ev.Connection.RemoteEndPoint);
             };
-            _tcpService.MessageArrived += (sender, ev) =>
+            tcpService.MessageArrived += (sender, ev) =>
             {
                 var message = UTF8NoBom.GetString(ev.Data);
                 Console.WriteLine("Thread {2} Message from {0}: {1}", ev.Connection.RemoteEndPoint, message, Thread.CurrentThread.ManagedThreadId);
@@ -39,13 +38,14 @@ namespace SimpleSocketDemo
 
 
 
-            _tcpService.Start();
+            tcpService.Start();
 
             var clientThread = new Thread(ConnectAsClient);
             clientThread.Start();
 
             Console.WriteLine("Press Ctrl+C to quit.");
             _quitEvent.WaitOne();
+            tcpService.Stop();
             clientThread.Join();
         }
 
@@ -66,22 +66,20 @@ namespace SimpleSocketDemo
                     var message = UTF8NoBom.GetString(d);
                     Console.WriteLine("Client: message from server: {0}", message);
 
-                    Interlocked.Increment(ref count);
+                    var messageCount = Interlocked.Increment(ref count);
+                    c.Send(UTF8NoBom.GetBytes(string.Format("client says: {0} message received.", messageCount)));
 
-
-                    c.Send(UTF8NoBom.GetBytes(string.Format("client says: {0} message received.", count)));
-
-                    if (count == 50)
+                    if (messageCount == 50)
                     {
                         c.Close();
                     }
                 },
                 (c) => {
-                    Console.WriteLine("Client: connected");
+                    Console.WriteLine("Client: connected.");
                     c.Send(UTF8NoBom.GetBytes("Hello server."));
                 },
                 (c, e) => {
-                    Console.WriteLine("Client: lost");
+                    Console.WriteLine("Client: connection lost.");
                 });
 
             connection.StartReceiving();
@@ -90,7 +88,7 @@ namespace SimpleSocketDemo
 
         private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
-            _tcpService.Stop();
+            Console.WriteLine("Exiting...");
             _quitEvent.Set();
         }
     }
