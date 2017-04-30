@@ -50,6 +50,7 @@
     <Compile Include="Events\ConnectionClosedEventArgs.cs" />
     <Compile Include="Events\ConnectionEstablishedEventArgs.cs" />
     <Compile Include="IMessageFramer.cs" />
+    <Compile Include="ITcpConnector.cs" />
     <Compile Include="Logging\LazyLogger.cs" />
     <Compile Include="Utils\Helper.cs" />
     <Compile Include="ITcpConnection.cs" />

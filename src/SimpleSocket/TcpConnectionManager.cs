@@ -44,8 +44,8 @@ namespace SimpleSocket
 
             ConnectionName = connectionName;
             ConnectionId = openedConnection.ConnectionId;
-            
-            
+
+            _framer = framer;
             _framer.RegisterMessageArrivedCallback(OnMessageArrived);
 
             _messageReceived = messageReceived;
@@ -63,8 +63,8 @@ namespace SimpleSocket
 
         public TcpConnectionManager(string connectionName, 
                                     Guid connectionId,
-                                    IPEndPoint remoteEndPoint, 
-                                    TcpClientConnector connector,
+                                    IPEndPoint remoteEndPoint,
+                                    ITcpConnector connector,
                                     bool useSsl,
                                     string sslTargetHost,
                                     bool sslValidateServer,
@@ -80,8 +80,9 @@ namespace SimpleSocket
             if (useSsl) Ensure.NotNull(sslTargetHost, "sslTargetHost");
 
             ConnectionName = connectionName;
-            ConnectionId = connectionId;           
-            
+            ConnectionId = connectionId;
+
+            _framer = framer;
             _framer.RegisterMessageArrivedCallback(OnMessageArrived);
 
             _messageReceived = messageReceived;
@@ -91,9 +92,8 @@ namespace SimpleSocket
             RemoteEndPoint = remoteEndPoint;
 
             _connection = useSsl 
-                ? connector.ConnectSslTo(ConnectionId, remoteEndPoint, ConnectionTimeout,
-                                         sslTargetHost, sslValidateServer, OnConnectionEstablished, OnConnectionFailed)
-                : connector.ConnectTo(ConnectionId, remoteEndPoint, ConnectionTimeout, OnConnectionEstablished, OnConnectionFailed);
+                ? connector.ConnectSslTo(ConnectionId, remoteEndPoint, ConnectionTimeout, sslTargetHost, sslValidateServer, OnConnectionEstablished, OnConnectionFailed, true)
+                : connector.ConnectTo(ConnectionId, remoteEndPoint, ConnectionTimeout, OnConnectionEstablished, OnConnectionFailed, true);
 
             _connection.ConnectionClosed += OnConnectionClosed;
             if (_connection.IsClosed)

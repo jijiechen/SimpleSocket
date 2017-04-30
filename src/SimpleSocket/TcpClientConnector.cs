@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace SimpleSocket
 {
-    public sealed class TcpClientConnector
+    public sealed class TcpClientConnector: ITcpConnector
     {
         private const int CheckPeriodMs = 200;
 

@@ -29,21 +29,16 @@ namespace SimpleSocket
         public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
 
 
-        public TcpService(IPEndPoint serverEndPoint,
-                          TcpSecurityType securityType,
-                          IMessageFramer framer,
-                          X509Certificate certificate)
+        public TcpService(IPEndPoint serverEndPoint, IMessageFramer framer, X509Certificate certificate)
         {
             Ensure.NotNull(serverEndPoint, nameof(serverEndPoint));
-            Ensure.NotNull(framer, nameof(framer)); 
-            if (securityType == TcpSecurityType.Secure)
-                Ensure.NotNull(certificate, "certificate");
-            
+            Ensure.NotNull(framer, nameof(framer));
+
             _serverEndPoint = serverEndPoint;
             _serverListener = new TcpServerListener(_serverEndPoint);
-            _securityType = securityType;
             _framer = framer;
             _certificate = certificate;
+            _securityType = certificate == null ? TcpSecurityType.Normal : TcpSecurityType.Secure;
         }
 
         public void Start()
