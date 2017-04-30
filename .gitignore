@@ -18,7 +18,6 @@ ipch/
 *.DotSettings
 *.DotSettings.user
 *.DotSettings.personal/Logs
-*.md
 App_Data
 
 .DS_Store
