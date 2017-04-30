@@ -147,7 +147,7 @@ namespace SimpleSocket
             }
             catch (Exception ex)
             {
-                Log.ErrorException(ex, "Error while handling message on connection '{0}#{1:d}' [{2}] error: {4}.",
+                Log.ErrorException(ex, "Error while handling message on connection '{0}#{1:d}' [{2}] error: {3}.",
                     ConnectionName, ConnectionId, _tcpConnection.RemoteEndPoint,  ex.Message);
                 CloseConnectionOnError("Error while handling message");
             }
