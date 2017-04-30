@@ -127,13 +127,6 @@ namespace SimpleSocketDemo
 
             _receivedHandler = handler;
         }
-
-        /// <summary>
-        /// Parses a stream chunking based on length-prefixed framing. 
-        /// Calls are re-entrant and hold state internally. Once full message arrives,
-        /// callback is raised (it is registered via <see cref="RegisterMessageArrivedCallback"/>
-        /// </summary>
-        /// <param name="bytes">A byte array of data to append</param>
         private void Parse(ArraySegment<byte> bytes)
         {
             byte[] data = bytes.Array;
