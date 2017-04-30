@@ -13,30 +13,26 @@ namespace SimpleSocket
         Secure
     }
 
-    public class TcpService
+    public class TcpService<TFramer> where TFramer: IMessageFramer, new()
     {
-        private static readonly ILogger Log = LogManager.GetLoggerFor<TcpService>();
+        private static readonly ILogger Log = LogManager.GetLoggerFor<TcpService<TFramer>>();
 
         private readonly IPEndPoint _serverEndPoint;
         private readonly TcpServerListener _serverListener;
         private readonly TcpSecurityType _securityType;
         private readonly X509Certificate _certificate;
-        private readonly IMessageFramer _framer;
-
 
         public event EventHandler<ConnectionEstablishedEventArgs> ConnectionEstablished;
         public event EventHandler<FramedMessageArrivedEventArgs> MessageArrived;
         public event EventHandler<ConnectionClosedEventArgs> ConnectionClosed;
 
 
-        public TcpService(IPEndPoint serverEndPoint, IMessageFramer framer, X509Certificate certificate)
+        public TcpService(IPEndPoint serverEndPoint, X509Certificate certificate)
         {
             Ensure.NotNull(serverEndPoint, nameof(serverEndPoint));
-            Ensure.NotNull(framer, nameof(framer));
 
             _serverEndPoint = serverEndPoint;
             _serverListener = new TcpServerListener(_serverEndPoint);
-            _framer = framer;
             _certificate = certificate;
             _securityType = certificate == null ? TcpSecurityType.Normal : TcpSecurityType.Secure;
         }
@@ -70,7 +66,7 @@ namespace SimpleSocket
             var manager = new TcpConnectionManager(
                     string.Format("{0}", _securityType.ToString().ToLower()),
                     conn,
-                    _framer,
+                    new TFramer(),
                     (m, d) => MessageArrived(this, new FramedMessageArrivedEventArgs(m, d)),
                     (m, e) => ConnectionClosed(this, new ConnectionClosedEventArgs(m, e)));
 
