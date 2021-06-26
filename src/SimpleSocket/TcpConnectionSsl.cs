@@ -124,7 +124,7 @@ namespace SimpleSocket
                 _sslStream = new SslStream(new NetworkStream(socket, true), false);
                 try
                 {
-                    var enabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Default;
+                    var enabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
                     _sslStream.BeginAuthenticateAsServer(certificate, false, enabledSslProtocols, true, OnEndAuthenticateAsServer, _sslStream);
                 }
                 catch (AuthenticationException exc)
